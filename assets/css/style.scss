@@ -152,6 +152,26 @@ body {
             /* SYSTEM */
             cursor: text;
 
+            /* SCROLLBAR */
+            overflow-y: auto;
+            overflow-x: auto;
+            &::-webkit-scrollbar {
+                width: 3px;
+                cursor: pointer !important;
+            }
+            &::-webkit-scrollbar-track {
+                background: transparent;
+                cursor: pointer !important;
+            }
+            &::-webkit-scrollbar-thumb {
+                background: #817f80;
+                cursor: pointer !important;
+                border-radius: 10px;
+            }
+            &::-webkit-scrollbar-thumb:hover {
+                background: #817f80;
+                cursor: pointer !important;
+            }
             ul {
                 padding: 0;
                 margin: 0;
@@ -159,6 +179,9 @@ body {
                     list-style: none;
                     font-size: 14px;
                 }
+            }
+            a {
+                color: #bdbdbd;
             }
             #currentText {
                 color: #f1f1f1;
