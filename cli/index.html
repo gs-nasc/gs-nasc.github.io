@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gs-nasc >> Just a dev</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    
+    <div class="terminal" id="terminal">
+        <div class="dock" id="terminaldock">
+            <div class="left">
+                <div class="buttons">
+                    <div class="close"></div>
+                    <div class="maximize"></div>
+                    <div class="minimize"></div>
+                </div>
+            </div>
+            <div class="center">
+                <span id="path">gsnasc@website: ~/</span>
+            </div>
+            <div class="right"></div>
+        </div>
+        <div class="body" id="terminalbody">
+            <ul id="terminalLines">
+                <li>Last login: Today on <b>browser</b></li>
+                <li>If you need help, just type help</li>
+                <li>gs-nasc@website: ~/ <span id="currentText"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <input type="text" id="command">
+
+    <script src="assets/js/terminal.min.js"></script>
+</body>
+</html>
