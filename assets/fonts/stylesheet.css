@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Evafiya';
+    src: url('EvafiyaRegular.woff2') format('woff2'),
+        url('EvafiyaRegular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
