@@ -11,6 +11,8 @@ const Page = {
             document.querySelectorAll(".hoverable").forEach(elm => Page.cursor.hoverables(elm));
             window.addEventListener("click", Page.events.changePageButton);
             window.addEventListener("wheel", Page.scroll.scroll);
+            document.addEventListener("DOMContentLoaded", Page.events.bodyLoaded);
+            document.addEventListener("resize", console.log);
         },
         /**
          * 
@@ -23,6 +25,12 @@ const Page = {
             if(page == null) return;
             Page.scroll.changeWrapper(page);
             Page.scroll.change3dEffect(page);
+        },
+        bodyLoaded: () => {
+            const body = document.querySelector("body");
+            const header = body.querySelector("header");
+
+            body.style.setProperty("--header-size", header.clientHeight + "px");
         }
     },
     cursor: {
@@ -71,7 +79,7 @@ const Page = {
             const wrapper = document.querySelector(".wrapper");
             const scene = new THREE.Scene();
             scene.background = new THREE.Color("#0c0c0c");
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const camera = new THREE.PerspectiveCamera(75, wrapper.clientWidth / wrapper.clientHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer();
             renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
             document.body.appendChild(renderer.domElement);
@@ -95,6 +103,15 @@ const Page = {
                 const pos = camera.position.clone();
                 pos.z = Page.three.nextZ;
                 camera.position.lerp(pos, 0.02);
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+
+                // Atualizar tamanho da câmera
+                camera.aspect = wrapper.clientWidth / wrapper.clientHeight;
+                camera.updateProjectionMatrix();
+
+                // Atualizar tamanho do renderizador
+                renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
 
                 renderer.render(scene, camera);
             };
