@@ -5,69 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="shortcut icon" href="assets/image/favicon.ico" type="image/x-icon">
-    <title>Gabriel N. - Software Engineer</title>
+    <title>Gabriel Nascimento - Portfolio</title>
 </head>
 <body>
+    <div class="viewport"></div>
     <div class="cursor">
-        <div class="cursor-small"></div>
+        <div class="cursor-small">
+            <svg class="arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+            </svg>    
+            <svg class="cross" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+        </div>
         <div class="cursor-big"></div>
     </div>
-    <div class="corners">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+
+    <div class="loading">
+        <span class="title">Gabriel Nascimento</span>
+        <span class="website">portfolio</span>
     </div>
-
-    <header>
-        <div class="name">Gabriel Nascimento</div>
-        <div class="occupation">Designer & Software Engineer</div>
-        <ul class="sidemenu">
-            <li class="active hoverable" data-page="1">Home</li>
-            <li class="hoverable" data-page="2">Projects</li>
-            <li class="hoverable" data-page="3">Contact</li>
-        </ul>
-    </header>
-
-
-    <div class="wrapper show" data-order="1">
-        <div class="poem">
-            <span class="hoverable">Sometimes, the true worth of a moment remains elusive</span>
-            <span class="hoverable">Until it transforms into a cherished memory.</span>
-            <br>
-            <span class="hoverable">Life has a way of weaving the fabric of time,</span>
-            <span class="hoverable">Revealing the significance of experiences</span>
-            <span class="hoverable">Only when they become nostalgic reflections.</span>
-            <br>
-            <span class="hoverable">Embrace each fleeting moment,</span>
-            <span class="hoverable">For its true value may lie hidden,</span>
-            <span class="hoverable">Waiting to be unveiled in the tapestry of memories</span>
-            <span class="hoverable">That shape our journey.</span>
+    <div class="page">
+        <div class="container">
+            <div class="corners">
+                <div class="bl"></div>
+                <div class="br"></div>
+                <div class="tr"></div>
+                <div class="tl"></div>
+            </div>
+            <header>
+                <div class="info">
+                    <div class="name">Gabriel Nascimento</div>
+                    <div class="occupation">Designer & Developer</div>
+                </div>
+                <!-- <ul>
+                    <li class="hoverable">Contact</li>
+                </ul> -->
+            </header>
+            <div class="projects">
+                <ul>
+                    <li class="label">
+                        <span class="title">May</span>
+                        <span class="year">2024</span>
+                    </li>
+                    <li class="project hoverable">
+                        <a href="http://taiyo.app/danese" target="_blank" rel="noopener noreferrer">
+                            <div class="project-placeholder">
+                                <img src="assets/image/projects/danese.png" alt="Dane-se project">
+                            </div>
+                            <div class="placeholder">
+                                <span class="title">Dane-se</span>
+                                <div class="chips">
+                                    <div class="chip">
+                                        <span>website</span>
+                                        <span>re-design</span>
+                                        <span>prototype</span>
+                                        <span>development</span>
+                                        <span>personal</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="label" id="carousel-end">
+                        <span class="title">&nbsp;</span>
+                        <span class="year">End.</span>
+                    </li>
+                </ul>
+            </div>
         </div>
+        
         <div class="social">
             <ul>
+                <!-- <li class="hoverable">
+                    <a href="https://github.com/gs-nasc" target="_blank">Experiments ↗</a>
+                </li> -->
                 <li class="hoverable">
                     <a href="https://www.awwwards.com/szhate/" target="_blank">
                         Awwwards ↗
                     </a>
                 </li>
                 <li class="hoverable">
-                    <a href="https://github.com/gs-nasc" target="_blank">Github ↗</a></li>
+                    <a href="https://github.com/gs-nasc" target="_blank">Github ↗</a>
+                </li>
                 <li class="hoverable">
-                    <a href="https://twitter.com/szhate" target="_blank">Twitter ↗</a></li>
+                    <a href="https://instagram.com/hate.sz" target="_blank">Instagram ↗</a>
+                </li>
             </ul>
         </div>
-        <div class="scroll"></div>
     </div>
-    <div class="wrapper hide" data-order="2">
-        <div class="scroll top"></div>
-        <div class="scroll"></div>
-    </div>
-    <div class="wrapper hide" data-order="3">
-        <div class="scroll top"></div>
-    </div>
+    
 
-    <script src="assets/js/script.js"  type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+    <script src="assets/js/script.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r70/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script> -->
 </body>
 </html>

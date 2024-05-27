@@ -1,6 +1,9 @@
-import * as THREE from './libs/three.module.js';
+Math.clamp = function(number, min, max) {
+    return Math.max(min, Math.min(number,max));
+}
 
 const Page = {
+    carouselLimit: 0,
     init: () => { 
         Page.events.register();
         Page.three.init();
@@ -9,28 +12,50 @@ const Page = {
         register: () => {
             document.addEventListener("mousemove", Page.cursor.move);
             document.querySelectorAll(".hoverable").forEach(elm => Page.cursor.hoverables(elm));
-            window.addEventListener("click", Page.events.changePageButton);
-            window.addEventListener("wheel", Page.scroll.scroll);
             document.addEventListener("DOMContentLoaded", Page.events.bodyLoaded);
-            document.addEventListener("resize", console.log);
+            window.addEventListener("resize", ev => console.log(ev));
         },
         /**
          * 
          * @param { MouseEvent } ev 
          */
-        changePageButton: (ev) => {
-            const target = ev.target;
-            if(target == null) return;
-            const page = target.getAttribute("data-page");
-            if(page == null) return;
-            Page.scroll.changeWrapper(page);
-            Page.scroll.change3dEffect(page);
-        },
         bodyLoaded: () => {
-            const body = document.querySelector("body");
-            const header = body.querySelector("header");
+            const corner = document.querySelector(".corners>div.tr");
+            const cornerRect = corner.getBoundingClientRect();
+            const cornerX = cornerRect.left + window.scrollX;
 
-            body.style.setProperty("--header-size", header.clientHeight + "px");
+
+            const carouselEnd = document.querySelector("li#carousel-end");
+            const carouselEndRect = carouselEnd.getBoundingClientRect();
+            const carouselEndX = carouselEndRect.left + window.scrollX;
+
+            const limit = cornerX - carouselEndX - cornerRect.width - carouselEndRect.width;
+
+            Page.carouselLimit = limit;
+
+            setTimeout(() => {
+                const loadingTitle = document.querySelector("div.loading span.title");
+                const loadingSubTitle = document.querySelector("div.loading span.website");
+                const page = document.querySelector("div.page");
+
+                gsap.to(loadingTitle, {
+                    opacity: 0,
+                    duration: 0.4
+                });
+                gsap.to(loadingSubTitle, {
+                    opacity: 0,
+                    duration: 0.4,
+                    delay: 0.2
+                });
+
+
+                gsap.to(page, {
+                    visibility: 'visible',
+                    opacity: 1,
+                    duration: 0.4,
+                    delay: 0.5
+                })
+            }, 1000)
         }
     },
     cursor: {
@@ -55,12 +80,28 @@ const Page = {
             const x = ev.pageX;
             const y = ev.pageY;
 
+            const container = document.querySelector("div.container"); 
+            const containerRect = container.getBoundingClientRect();
+
+            const containerLeft = containerRect.left + window.scrollX;
+            const containerRight = containerRect.right - window.scrollX;
+            
+            const transform = Math.floor(Page.carouselLimit / 100 * (((Math.clamp(Math.floor(x-containerLeft), 0, Math.floor(containerRight - containerLeft)) / (containerRight - containerLeft)) * 100)));
+
+            const carousel = document.querySelector(".projects>ul");
+
+            gsap.to(carousel, {
+                transform: `translateX(calc(${transform}px))`
+            });
+
             gsap.to(cursorSmall, {x, y, duration: .1});
             gsap.to(cursorBig, {
                 x,
                 y,
                 duration: .5
             }).timeScale(2);
+
+
         },
         /**
          * 
@@ -68,98 +109,204 @@ const Page = {
          */
         hover: (ev) => {
             const cursorBig = Page.cursor.cursorBigElm;
-            const scale = (ev.type == "mouseenter") ? 2 : 1;
+            const scale = (ev.type == "mouseenter") ? "60px" : "30px";
+            const margin = (ev.type == "mouseenter") ? "-30px" : "-15px";
+            gsap.to(cursorBig, {width: scale, height: scale, top: margin, left: margin, duration: .2});
 
-            gsap.to(cursorBig, {scale, duration: .2});
+            const cursorSmall = Page.cursor.cursorSmallElm;
+
+            const cursorArrow = cursorSmall.querySelector("svg.arrow");
+            const cursorCross = cursorSmall.querySelector("svg.cross");
+
+            const arrowOpacity = (ev.type == "mouseenter") ? 1 : 0;
+            const crossOpacity = (ev.type == "mouseenter") ? 0 : 1;
+
+            const arrowRotation = (ev.type == "mouseenter" ? 0 : 135);
+            const crossRotation = (ev.type == "mouseenter" ? 135 : 45);
+
+            gsap.to(cursorArrow, {
+                opacity: arrowOpacity,
+                transform: `rotate(${arrowRotation}deg)`,
+                duration: .2
+            });
+
+            gsap.to(cursorCross, {
+                opacity: crossOpacity,
+                transform: `rotate(${crossRotation}deg)`,
+                duration: .2
+            });
         }
     },
     three: {
-        nextZ: 21,
+        renderer: undefined,
+        scene: undefined,
+        camera: undefined,
+        material: undefined,
+        onResize: () => {
+            let container = document.querySelector('.viewport');
+            const {
+                offsetWidth: width,
+                offsetHeight: height
+            } = container;
+            Page.three.camera.aspect = width / height;
+            Page.three.camera.updateProjectionMatrix();
+            Page.three.renderer.setSize(width, height);
+        },
         init: () => {
-            const wrapper = document.querySelector(".wrapper");
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color("#0c0c0c");
-            const camera = new THREE.PerspectiveCamera(75, wrapper.clientWidth / wrapper.clientHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer();
-            renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
-            document.body.appendChild(renderer.domElement);
+            let container = document.querySelector('.viewport');
+            Page.three.scene = new THREE.Scene();
+            const {
+                offsetWidth: width,
+                offsetHeight: height
+            } = container;
+            Page.three.camera = new THREE.PerspectiveCamera(45, width / height, 1, 100);
+            Page.three.camera.position.z = 30;
+            Page.three.renderer = new THREE.WebGLRenderer({
+                alpha: true,
+                antialias: true
+            });
+            Page.three.renderer.setSize(width, height);
+            Page.three.renderer.setClearColor(0x000000, 0);
+            container.appendChild(Page.three.renderer.domElement);
+            window.addEventListener('resize', Page.three.onResize);
+            const geometry = new THREE.PlaneGeometry(50, 30, 100, 100);
+            Page.three.material = new THREE.ShaderMaterial({
+                side: THREE.DoubleSide,
+                transparent: true,
+                uniforms: {
+                    time: {
+                        type: 'f',
+                        value: 0.2
+                    },
+                    speed: {
+                        type: 'f',
+                        value: 0.0009
+                    },
+                    waveDefinition: {
+                        type: 'f',
+                        value: 5.4
+                    },
+                    waveAmplitude: {
+                        type: 'f',
+                        value: 0.14
+                    },
+                    topoDefinition: {
+                        type: 'f',
+                        value: 20
+                    },
+                    topoColor: {
+                        type: 'c',
+                        value: new THREE.Color(25 / 255, 25 / 255, 25 / 255)
+                    }
+                },
+                vertexShader: `
+      vec3 mod289(vec3 x) {
+        return x - floor(x * (1.0 / 289.0)) * 289.0;
+      }
 
-            const geometry = new THREE.TorusKnotGeometry( 4, 1.2, 300, 20, 2, 5 ); 
-            const whiteTexture = new THREE.MeshBasicMaterial({ color: "#272727", wireframe: true });
+      vec2 mod289(vec2 x) {
+        return x - floor(x * (1.0 / 289.0)) * 289.0;
+      }
 
-            const torus = new THREE.Mesh(geometry, whiteTexture);
-            scene.add(torus);
+      vec3 permute(vec3 x) {
+        return mod289(((x*34.0)+1.0)*x);
+      }
 
-            camera.position.z = 50;
-            torus.rotation.x = 0;
-            torus.rotation.y = 0;
+      float snoise(vec2 v)
+      {
+        const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+            0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+            -0.577350269189626,  // -1.0 + 2.0 * C.x
+            0.024390243902439); // 1.0 / 41.0
+        // First corner
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
 
-            const animate = () => {
-            requestAnimationFrame(animate);
+        // Other corners
+        vec2 i1;
+        //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0
+        //i1.y = 1.0 - i1.x;
+        i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        // x0 = x0 - 0.0 + 0.0 * C.xx ;
+        // x1 = x0 - i1 + 1.0 * C.xx ;
+        // x2 = x0 - 1.0 + 2.0 * C.xx ;
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
 
-                torus.rotation.x += 0.002;
-                torus.rotation.y += 0.002;
+        // Permutations
+        i = mod289(i); // Avoid truncation effects in permutation
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+            + i.x + vec3(0.0, i1.x, 1.0 ));
 
-                const pos = camera.position.clone();
-                pos.z = Page.three.nextZ;
-                camera.position.lerp(pos, 0.02);
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m ;
+        m = m*m ;
 
-                camera.aspect = window.innerWidth / window.innerHeight;
+        // Gradients: 41 points uniformly over a line, mapped onto a diamond.
+        // The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
 
-                // Atualizar tamanho da câmera
-                camera.aspect = wrapper.clientWidth / wrapper.clientHeight;
-                camera.updateProjectionMatrix();
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
 
-                // Atualizar tamanho do renderizador
-                renderer.setSize(wrapper.clientWidth, wrapper.clientHeight);
+        // Normalise gradients implicitly by scaling m
+        // Approximation of: m *= inversesqrt( a0*a0 + h*h );
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
 
-                renderer.render(scene, camera);
-            };
-            animate();
-        }
-    },
-    scroll: {
-        /**
-         * 
-         * @param {WheelEvent} ev 
-         */
-        scroll: (ev) => {
-            const isNext = ev.deltaY > 0;
-            const currentWrapper = document.querySelector(".wrapper.show");
-            const currentWrapperOrder = Number(currentWrapper.getAttribute("data-order"));
-            const wrapperCount = document.querySelectorAll(".wrapper").length;
-            if(isNaN(currentWrapperOrder)) return;
-            let nextWrapper = currentWrapperOrder + ((isNext) ? +1 : -1); 
-            nextWrapper = (nextWrapper <= 0) ? 1 : (nextWrapper >= wrapperCount) ? wrapperCount : nextWrapper;
-            Page.scroll.changeWrapper(nextWrapper);
-            Page.scroll.change3dEffect(nextWrapper);
+        // Compute final noise value at P
+        vec3 g;
+        g.x  = a0.x  * x0.x  + h.x  * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
+
+      uniform float time;
+      uniform float waveDefinition;
+      uniform float waveAmplitude;
+
+      varying vec3 vPosition;
+
+      void main(void) {
+        float newZ = snoise(uv) + snoise((uv * waveDefinition) + time);
+        newZ *= waveAmplitude;
+
+        vec3 newPosition = vec3(position.xy, position.z + newZ);
+        vPosition = newPosition;
+
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+      }
+    `,
+                fragmentShader: `
+      float map(float value, float inMin, float inMax, float outMin, float outMax) {
+        return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+      }
+
+      #extension GL_OES_standard_derivatives : enable
+
+      uniform float waveAmplitude;
+      uniform float topoDefinition;
+      uniform vec3 topoColor;
+
+      varying vec3 vPosition;
+
+      void main(void) {
+        float coord = vPosition.z * topoDefinition;
+        float line = abs(fract(coord - 0.1) - 0.5) / fwidth(coord);
+        line /= 1.1;
+
+        gl_FragColor = vec4(topoColor, 1.0 - line);
+      }
+    `
+            });
+            const mesh = new THREE.Mesh(geometry, Page.three.material);
+            Page.three.scene.add(mesh);
+            Page.three.draw();
         },
-        /**
-         * 
-         * @param {Number} page 
-         */
-        changeWrapper: (page) => {
-            const currentWrapper = document.querySelector(".wrapper.show");
-            const nextWrapper = document.querySelector(`.wrapper[data-order="${page}"]`);
-
-            const currentButton = document.querySelector(`.sidemenu li[data-page="${currentWrapper.getAttribute("data-order")}"]`);
-            const nextButton = document.querySelector(`.sidemenu li[data-page="${page}"]`);
-
-            currentWrapper.classList.remove("show");
-            currentWrapper.classList.add("hide");
-            currentButton.classList.remove("active");
-            
-            nextWrapper.classList.add("show");
-            nextWrapper.classList.remove("hide");
-            nextButton.classList.add("active");
-        },
-        /**
-         * 
-         * @param {Number} page 
-         */
-        change3dEffect: (page) => {
-            const wrapperCount = document.querySelectorAll(".wrapper").length;
-            Page.three.nextZ = 12 + (((page - wrapperCount - 1) *-1)*3);
+        draw: () => {
+            Page.three.renderer.render(Page.three.scene, Page.three.camera);
+            requestAnimationFrame(Page.three.draw);
+            Page.three.material.uniforms.time.value += Page.three.material.uniforms.speed.value;
         }
     },
 }
